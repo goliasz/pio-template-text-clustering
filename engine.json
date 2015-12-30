@@ -1,0 +1,27 @@
+{
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.clustering.TextClusteringEngine",
+  "datasource": {
+    "params" : {
+      "appName": "INVALID_APP_NAME"
+    }
+  },
+  "algorithms": [
+    {
+      "name": "tclustering",
+      "params": {
+        "seed" : 75,
+        "minCount": 1,
+        "learningRate": 0.0,
+	      "numIterations": 1,
+	      "vectorSize": 100,
+        "kmNumClusters": 50,
+        "kmNumIterations": 100,
+        "kmRuns": 1,
+        "kmInitMode": "k-means||",
+        "kmSeed": 75
+      }
+    }
+  ]
+}
