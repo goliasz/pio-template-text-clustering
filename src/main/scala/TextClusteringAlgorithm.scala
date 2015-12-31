@@ -18,7 +18,12 @@ case class AlgorithmParams(
   val minCount: Int,
   val learningRate: Double,
   val numIterations: Int,
-  val vectorSize: Int
+  val vectorSize: Int,
+  val kmNumClusters: Int,
+  val kmNumIterations: Int,
+  val kmRuns: Int,
+  val kmInitMode: String,
+  val kmSeed: Int
 ) extends Params
 
 class TCModel(
@@ -66,7 +71,9 @@ class TextClusteringAlgorithm(val ap: AlgorithmParams) extends P2LAlgorithm[Prep
         
     val r = model.docPairs.map(x=>(td02bv.dot(x._2),x._1)).sortWith(_._1>_._1).take(query.limit).map(x=>{new DocScore(-1, x._1, x._2, "")})
  
-    PredictedResult(docScores = r.toArray)
+    val qryClusterNo = model.kMeansModel.predict(td02w2v)
+
+    PredictedResult(clusterNo = qryClusterNo, docScores = r.toArray)
   }
 
   def sumArray (m: Array[Double], n: Array[Double]): Array[Double] = {

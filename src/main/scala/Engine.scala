@@ -8,6 +8,7 @@ case class Query(
 ) extends Serializable
 
 case class PredictedResult(
+  clusterNo: Double,
   docScores: Array[DocScore]
 ) extends Serializable {
   override def toString: String = docScores.mkString(",")
