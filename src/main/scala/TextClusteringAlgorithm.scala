@@ -69,7 +69,7 @@ class TextClusteringAlgorithm(val ap: AlgorithmParams) extends P2LAlgorithm[Prep
     val td02w2vn = normalizer1.transform(td02w2v)
     val td02bv = new breeze.linalg.DenseVector(td02w2vn.toArray)
         
-    val r = model.docPairs.map(x=>(td02bv.dot(x._2),x._1)).sortWith(_._1>_._1).take(query.limit).map(x=>{new DocScore(-1, x._1, x._2, "")})
+    val r = model.docPairs.map(x=>(td02bv.dot(x._2),x._1)).sortWith(_._1>_._1).take(query.limit).map(x=>{new DocScore(-1, x._1, x._2)})
  
     val qryClusterNo = model.kMeansModel.predict(td02w2v)
 
