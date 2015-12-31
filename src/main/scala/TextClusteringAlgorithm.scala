@@ -29,7 +29,7 @@ case class AlgorithmParams(
 class TCModel(
   val word2VecModel: Word2VecModel,
   val kMeansModel: KMeansModel,
-  val docPairs: List[(String, breeze.linalg.DenseVector[Double])],
+  val docPairs: List[(String, breeze.linalg.DenseVector[Double], Int)],
   val vectorSize: Int
 ) extends Serializable {}
 
@@ -38,7 +38,7 @@ class TextClusteringAlgorithm(val ap: AlgorithmParams) extends P2LAlgorithm[Prep
   @transient lazy val logger = Logger[this.type]
 
   def train(sc: SparkContext, data: PreparedData): TCModel = {
-    println("Training text similarity model.")
+    println("Training text clustering model.")
 
     val art1 = data.docs.map(x=>(x._2.toLowerCase.replace(".","").split(" ").filter(k => !stopwords.contains(k)).map(normalizet).filter(_.trim.length>2).toSeq, x._1))
     
@@ -56,7 +56,7 @@ class TextClusteringAlgorithm(val ap: AlgorithmParams) extends P2LAlgorithm[Prep
     var kmModel = KMeans.train(art_pairs.map(_._2).cache, ap.kmNumClusters, ap.kmNumIterations, ap.kmRuns, ap.kmInitMode, ap.kmSeed)
 
     val normalizer1 = new Normalizer()
-    val art_pairsb = art_pairs.map(x=>(x._1, normalizer1.transform(x._2))).map(x=>(x._1,{new breeze.linalg.DenseVector(x._2.toArray)}))	
+    val art_pairsb = art_pairs.map(x=>(x._1, normalizer1.transform(x._2), x._2)).map(x=>(x._1,{new breeze.linalg.DenseVector(x._2.toArray)}, kmModel.predict(x._3)))	
 
     new TCModel(model, kmModel, art_pairsb.collect.toList, ap.vectorSize)
   }
@@ -69,11 +69,11 @@ class TextClusteringAlgorithm(val ap: AlgorithmParams) extends P2LAlgorithm[Prep
     val td02w2vn = normalizer1.transform(td02w2v)
     val td02bv = new breeze.linalg.DenseVector(td02w2vn.toArray)
         
-    val r = model.docPairs.map(x=>(td02bv.dot(x._2),x._1)).sortWith(_._1>_._1).take(query.limit).map(x=>{new DocScore(-1, x._1, x._2)})
+    val r = model.docPairs.map(x=>(td02bv.dot(x._2),x._1,x._3)).sortWith(_._1>_._1).take(query.limit).map(x=>{new DocScore(x._3, x._1, x._2)})
  
     val qryClusterNo = model.kMeansModel.predict(td02w2v)
 
-    PredictedResult(clusterNo = qryClusterNo, docScores = r.toArray)
+    PredictedResult(cluster = qryClusterNo, docScores = r.toArray)
   }
 
   def sumArray (m: Array[Double], n: Array[Double]): Array[Double] = {

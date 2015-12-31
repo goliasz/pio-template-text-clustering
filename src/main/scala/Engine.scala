@@ -8,7 +8,7 @@ case class Query(
 ) extends Serializable
 
 case class PredictedResult(
-  clusterNo: Double,
+  cluster: Double,
   docScores: Array[DocScore]
 ) extends Serializable {
   override def toString: String = docScores.mkString(",")
@@ -20,7 +20,7 @@ case class DocScore(
   id: String
 ) extends Serializable
 
-object TextSimilarityEngine extends EngineFactory {
+object TextClusteringEngine extends EngineFactory {
   def apply() = {
     new Engine(
       classOf[DataSource],
