@@ -23,12 +23,12 @@ class DataSource(val dsp: DataSourceParams)
   override
   def readTraining(sc: SparkContext): TrainingData = {
     println("Gathering data from event server.")
-    val docsRDD: RDD[(String,String)] = PEventStore.aggregateProperties(
+    val docsRDD: RDD[((String,String),String)] = PEventStore.aggregateProperties(
       appName = dsp.appName,
       entityType = "doc",
-      required = Some(List("id","text")))(sc).map { case (entityId, properties) =>
+      required = Some(List("id1","id2","text")))(sc).map { case (entityId, properties) =>
         try {
-	  (properties.get[String]("id"), properties.get[String]("text"))
+	  ((properties.get[String]("id1"), properties.get[String]("id2")), properties.get[String]("text"))
         } catch {
           case e: Exception => {
             logger.error(s"Failed to get properties ${properties} of" +
@@ -43,5 +43,5 @@ class DataSource(val dsp: DataSourceParams)
 }
 
 class TrainingData(
-  val docs: RDD[(String, String)]
+  val docs: RDD[((String, String), String)]
 ) extends Serializable

@@ -4,7 +4,8 @@ import io.prediction.controller.{Engine,EngineFactory}
 
 case class Query(
   val doc: String,
-  val limit: Int
+  val limit: Int,
+  val id2: String
 ) extends Serializable
 
 case class PredictedResult(
@@ -17,7 +18,8 @@ case class PredictedResult(
 case class DocScore(
   cluster: Double,
   score: Double,
-  id: String
+  id1: String,
+  id2: String
 ) extends Serializable
 
 object TextClusteringEngine extends EngineFactory {
