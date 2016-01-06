@@ -16,7 +16,7 @@
         "learningRate": 0.0,
 	      "numIterations": 1,
 	      "vectorSize": 100,
-        "kmNumClusters": 50,
+        "kmNumClusters": 10,
         "kmNumIterations": 100,
         "kmRuns": 1,
         "kmInitMode": "k-means||",
