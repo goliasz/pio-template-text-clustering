@@ -1,6 +1,7 @@
 package org.template.clustering
 
 import io.prediction.controller.{Engine,EngineFactory}
+import org.joda.time.DateTime
 
 case class Query(
   val doc: String,
@@ -20,7 +21,8 @@ case class DocScore(
   cluster: Double,
   score: Double,
   id1: String,
-  id2: String
+  id2: String,
+  eventTime: DateTime
 ) extends Serializable
 
 object TextClusteringEngine extends EngineFactory {

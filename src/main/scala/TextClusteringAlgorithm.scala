@@ -12,6 +12,7 @@ import org.apache.spark.mllib.clustering.{KMeans, KMeansModel}
 import grizzled.slf4j.Logger
 import org.apache.spark.mllib.feature.Normalizer
 import org.apache.spark.mllib.linalg.DenseVector
+import org.joda.time.DateTime
 
 case class AlgorithmParams(
   val seed: Int,
@@ -29,7 +30,7 @@ case class AlgorithmParams(
 class TCModel(
   val word2VecModel: Word2VecModel,
   val kMeansModel: KMeansModel,
-  val docPairs: List[((String,String), breeze.linalg.DenseVector[Double], Int)],
+  val docPairs: List[((String,String,DateTime), breeze.linalg.DenseVector[Double], Int)],
   val vectorSize: Int
 ) extends Serializable {}
 
@@ -40,7 +41,7 @@ class TextClusteringAlgorithm(val ap: AlgorithmParams) extends P2LAlgorithm[Prep
   def train(sc: SparkContext, data: PreparedData): TCModel = {
     println("Training text clustering model.")
 
-    val art1 = data.docs.map(x=>(x._2.toLowerCase.replace(".","").split(" ").filter(k => !stopwords.contains(k)).map(normalizet).filter(_.trim.length>2).toSeq, x._1))
+    val art1 = data.docs.map(x=>(x._2.toLowerCase.replace(".","").split(" ").filter(k => !stopwords.contains(k)).map(normalizet).filter(_.trim.length>2).toSeq, (x._1._1, x._1._2, x._3) ))
     
     val word2vec = new Word2Vec()
     word2vec.setSeed(ap.seed)
@@ -69,7 +70,7 @@ class TextClusteringAlgorithm(val ap: AlgorithmParams) extends P2LAlgorithm[Prep
     val td02w2vn = normalizer1.transform(td02w2v)
     val td02bv = new breeze.linalg.DenseVector(td02w2vn.toArray)
         
-    val r = model.docPairs.filter(x=>{if(query.id1.trim.isEmpty) true else query.id1==x._1._1}).filter(x=>{if(query.id2.trim.isEmpty) true else query.id2==x._1._2}).map(x=>(td02bv.dot(x._2),x._1,x._3)).sortWith(_._1>_._1).take(query.limit).map(x=>{new DocScore(x._3, x._1, x._2._1, x._2._2)})
+    val r = model.docPairs.filter(x=>{if(query.id1.trim.isEmpty) true else query.id1==x._1._1}).filter(x=>{if(query.id2.trim.isEmpty) true else query.id2==x._1._2}).map(x=>(td02bv.dot(x._2),x._1,x._3)).sortWith(_._1>_._1).take(query.limit).map(x=>{new DocScore(x._3, x._1, x._2._1, x._2._2, x._2._3)})
  
     val qryClusterNo = model.kMeansModel.predict(td02w2v)
 

@@ -10,6 +10,7 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import org.joda.time.DateTime
 
 import grizzled.slf4j.Logger
 
@@ -20,6 +21,7 @@ class DataSource(val dsp: DataSourceParams)
 
   @transient lazy val logger = Logger[this.type]
 
+/*
   override
   def readTraining(sc: SparkContext): TrainingData = {
     println("Gathering data from event server.")
@@ -40,8 +42,29 @@ class DataSource(val dsp: DataSourceParams)
 		
     new TrainingData(docsRDD)
   }
+*/
+
+  override
+  def readTraining(sc: SparkContext): TrainingData = {
+    println("Gathering data from event server.")
+    val docsRDD: RDD[((String,String),String,DateTime)] = PEventStore.find(
+      appName = dsp.appName,
+      entityType = Some("doc"),
+      eventNames = Some(List("$set")))(sc).map { event =>
+        try {
+	  ((event.properties.get[String]("id1"), event.properties.get[String]("id2")), event.properties.get[String]("text"),event.eventTime)
+        } catch {
+          case e: Exception => {
+            logger.error(s"Failed to convert event ${event} of. Exception: ${e}.")
+            throw e
+          }
+        }
+      }
+		
+    new TrainingData(docsRDD)
+  }
 }
 
 class TrainingData(
-  val docs: RDD[((String, String), String)]
+  val docs: RDD[((String, String), String, DateTime)]
 ) extends Serializable
