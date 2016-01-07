@@ -13,7 +13,7 @@ docker run --hostname pio1 --privileged=true --name pio1 -it -p 8000:8000 -p 707
 
 root@pio1:/# pio-start-all<br>
 root@pio1:/# cd MyEngine<br>
-root@pio1:/MyEngine# pio template get goliasz/pio-template-text-clustering --version "0.2" textclus<br>
+root@pio1:/MyEngine# pio template get goliasz/pio-template-text-clustering --version "0.4" textclus<br>
 root@pio1:/MyEngine/textclus# vi engine.json<br>
 Set application name to “textclus”<br>
 <br>
@@ -33,7 +33,7 @@ curl -i -X GET http://localhost:7070/events.json?accessKey=[YOUR ACCESS KEY FROM
 <br>
 ### Query cluster and similarity scores
 
-curl -X POST -H "Content-Type: application/json" -d '{"doc": "Everyone realizes why a new common language would be desirable", "limit", 3}' http://localhost:8000/queries.json<br>
+curl -X POST -H "Content-Type: application/json" -d '{"doc": "Everyone realizes why a new common language would be desirable", "limit": 3, "id1": "", "id2": ""}' http://localhost:8000/queries.json<br>
 <br>
 Result:<br>
 <br>
@@ -41,11 +41,21 @@ Result:<br>
 "cluster":2.0,<br>
 "docScores":<br>
    [<br>
-{"cluster":2.0,"score":0.40422985696997243,"id":"2"},<br>
-{"cluster":3.0,"score":0.19822372027235752,"id":"5"},<br>
-{"cluster":1.0,"score":0.08433911378575301,"id":"4"}<br>
+{"cluster":2.0,"score":0.40422985696997243,"id1":"2","id2":"2"},<br>
+{"cluster":3.0,"score":0.19822372027235752,"id1":"5","id2":"5"},<br>
+{"cluster":1.0,"score":0.08433911378575301,"id1":"4","id2":"4"}<br>
    ]<br>
 }<br>
-
-
-
+<br>
+<br>
+curl -X POST -H "Content-Type: application/json" -d '{"doc": "Everyone realizes why a new common language would be desirable", "limit": 3, "id1": "2", "id2": ""}' http://localhost:8000/queries.json<br>
+<br>
+Result:<br>
+<br>
+{<br>
+"cluster":2.0,<br>
+"docScores":<br>
+   [<br>
+{"cluster":2.0,"score":0.40422985696997243,"id1":"2","id2":"2"},<br>
+   ]<br>
+}<br>
