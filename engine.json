@@ -4,7 +4,8 @@
   "engineFactory": "org.template.clustering.TextClusteringEngine",
   "datasource": {
     "params" : {
-      "appName": "INVALID_APP_NAME"
+      "appName": "INVALID_APP_NAME",
+      "groupBy": ""
     }
   },
   "algorithms": [

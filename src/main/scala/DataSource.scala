@@ -10,39 +10,16 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.joda.time.DateTime
+import org.joda.time.{DateTime,LocalDateTime}
 
 import grizzled.slf4j.Logger
 
-case class DataSourceParams(appName: String) extends Params
+case class DataSourceParams(appName: String, groupBy: String) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData, EmptyEvaluationInfo, Query, EmptyActualResult] {
 
   @transient lazy val logger = Logger[this.type]
-
-/*
-  override
-  def readTraining(sc: SparkContext): TrainingData = {
-    println("Gathering data from event server.")
-    val docsRDD: RDD[((String,String),String)] = PEventStore.aggregateProperties(
-      appName = dsp.appName,
-      entityType = "doc",
-      required = Some(List("id1","id2","text")))(sc).map { case (entityId, properties) =>
-        try {
-	  ((properties.get[String]("id1"), properties.get[String]("id2")), properties.get[String]("text"))
-        } catch {
-          case e: Exception => {
-            logger.error(s"Failed to get properties ${properties} of" +
-              s" ${entityId}. Exception: ${e}.")
-            throw e
-          }
-        }
-      }
-		
-    new TrainingData(docsRDD)
-  }
-*/
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
@@ -61,7 +38,18 @@ class DataSource(val dsp: DataSourceParams)
         }
       }
 		
-    new TrainingData(docsRDD)
+    val now = new org.joda.time.LocalDateTime()
+    if (dsp.groupBy=="id1") {
+      val docsRDD2 = docsRDD.map(x=>(x._1._1, x._2)).groupByKey.map(x=>(x._1,x._2.mkString(" "))).map(x=>((x._1, "-1"), x._2, now.toDateTime))
+      new TrainingData(docsRDD2)
+    }
+    else if (dsp.groupBy=="id2") {
+      val docsRDD2 = docsRDD.map(x=>(x._1._2, x._2)).groupByKey.map(x=>(x._1,x._2.mkString(" "))).map(x=>(("-1", x._1), x._2, now.toDateTime))
+      new TrainingData(docsRDD2)
+    }
+    else {
+      new TrainingData(docsRDD)
+    }
   }
 }
 
