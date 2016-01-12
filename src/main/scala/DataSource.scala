@@ -14,7 +14,7 @@ import org.joda.time.{DateTime,LocalDateTime}
 
 import grizzled.slf4j.Logger
 
-case class DataSourceParams(appName: String, groupBy: String) extends Params
+case class DataSourceParams(appName: String, groupBy: String, limitDays: Int) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData, EmptyEvaluationInfo, Query, EmptyActualResult] {
@@ -24,9 +24,12 @@ class DataSource(val dsp: DataSourceParams)
   override
   def readTraining(sc: SparkContext): TrainingData = {
     println("Gathering data from event server.")
+    val aStartTime = if (dsp.limitDays>0) Option(new org.joda.time.LocalDateTime().minusDays(dsp.limitDays).toDateTime) else None
+
     val docsRDD: RDD[((String,String),String,DateTime)] = PEventStore.find(
       appName = dsp.appName,
       entityType = Some("doc"),
+      startTime = aStartTime,
       eventNames = Some(List("$set")))(sc).map { event =>
         try {
 	  ((event.properties.get[String]("id1"), event.properties.get[String]("id2")), event.properties.get[String]("text"),event.eventTime)

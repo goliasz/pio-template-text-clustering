@@ -7,7 +7,8 @@ case class Query(
   val doc: String,
   val limit: Int,
   val id1: String,
-  val id2: String
+  val id2: String,
+  val matchClusters: Boolean
 ) extends Serializable
 
 case class PredictedResult(

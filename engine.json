@@ -5,7 +5,8 @@
   "datasource": {
     "params" : {
       "appName": "INVALID_APP_NAME",
-      "groupBy": ""
+      "groupBy": "",
+      "limitDays": 0
     }
   },
   "algorithms": [
